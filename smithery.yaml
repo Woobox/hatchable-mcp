@@ -1,0 +1,51 @@
+version: 1
+
+name: hatchable
+displayName: Hatchable
+description: Build, deploy, and manage full-stack web apps from any MCP client. Hatchable hosts the apps your AI builds — database, auth, storage, and cron included. Free forever, no credits.
+homepage: https://hatchable.com
+documentation: https://hatchable.com/docs
+icon: https://hatchable.com/icon.png
+
+# Hosted / remote MCP server — not installed locally.
+runtime: remote
+
+remote:
+  transport: streamable-http
+  url: https://hatchable.com/mcp
+
+auth:
+  # OAuth 2.1 with PKCE and Dynamic Client Registration (RFC 7591).
+  # Bearer tokens also accepted; a pending key is auto-issued on the
+  # first `initialize` call if no Authorization header is present.
+  type: oauth2
+  authorizationServer: https://hatchable.com
+  protectedResourceMetadata: https://hatchable.com/.well-known/oauth-protected-resource
+  authorizationServerMetadata: https://hatchable.com/.well-known/oauth-authorization-server
+  pkce: true
+  dynamicClientRegistration: true
+
+categories:
+  - developer-tools
+  - web-development
+  - hosting
+  - databases
+
+keywords:
+  - full-stack
+  - deployment
+  - postgres
+  - auth
+  - serverless
+  - app-builder
+
+# Capability hints — Smithery uses these to render feature badges.
+features:
+  tools: true
+  resources: true
+  prompts: false
+
+maintainer:
+  name: Hatchable
+  url: https://hatchable.com
+  email: hello@hatchable.com

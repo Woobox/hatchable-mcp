@@ -1,0 +1,31 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.hatchable/hatchable",
+  "title": "Hatchable",
+  "description": "Build, deploy, and host full-stack web apps from any MCP client. DB, auth, storage, cron included.",
+  "version": "2.0.0",
+  "websiteUrl": "https://hatchable.com",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://hatchable.com/mcp"
+    }
+  ],
+  "icons": [
+    {
+      "src": "https://hatchable.com/icon.png",
+      "sizes": ["512x512"],
+      "mimeType": "image/png"
+    },
+    {
+      "src": "https://hatchable.com/icon-256.png",
+      "sizes": ["256x256"],
+      "mimeType": "image/png"
+    },
+    {
+      "src": "https://hatchable.com/favicon.svg",
+      "sizes": ["any"],
+      "mimeType": "image/svg+xml"
+    }
+  ]
+}
