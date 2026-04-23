@@ -3,7 +3,7 @@
 [![MCP Registry](https://img.shields.io/badge/MCP_Registry-com.hatchable%2Fhatchable-blue)](https://registry.modelcontextprotocol.io/v0/servers?search=hatchable)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 
-Hosted full-stack app platform, exposed as an MCP server. Any MCP client can create a dedicated Postgres database, deploy API functions, serve static sites, and manage auth, cron, and storage. Every project is live at its own URL within seconds. Free tier, no credits.
+Build and host full-stack web apps and sites on Hatchable from any MCP client. Every project gets its own Postgres database, auth, storage, domains, and cron — plus a live URL in seconds. Free tier, no credits.
 
 | | |
 |---|---|
