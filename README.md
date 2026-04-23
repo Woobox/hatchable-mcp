@@ -120,6 +120,15 @@ Each project ships with Node.js 20, a dedicated Postgres database, built-in auth
 
 Bearer tokens are scoped per-account. You can rotate or revoke them in [the console](https://hatchable.com/console/settings?tab=api-keys).
 
+## Docker (for registries and scanners)
+
+The [`Dockerfile`](./Dockerfile) in this repo is a thin stdio-to-HTTP proxy built on [`mcp-remote`](https://github.com/geelen/mcp-remote). It exists so registries and quality scanners that expect a runnable container (Glama, Smithery, etc.) can introspect the tool surface. End users don't need to build it — configure `https://hatchable.com/mcp` directly in your MCP client and let the client's native HTTP transport talk to the server.
+
+```bash
+docker build -t hatchable-mcp .
+docker run --rm -i hatchable-mcp  # stdio ↔ https://hatchable.com/mcp
+```
+
 ## License
 
 MIT. See [`LICENSE`](./LICENSE).
