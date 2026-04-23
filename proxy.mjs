@@ -6,21 +6,25 @@
 // delimited JSON-RPC messages from stdin, POSTs them to the live MCP
 // endpoint, and writes each response back to stdout.
 //
-// No auth handling, no OAuth discovery, no extra protocol negotiation
-// — just raw forwarding. On `initialize` with no Authorization header,
-// hatchable.com/mcp auto-mints a pending API key (surfaced in the
-// `_meta.api_key` field of the response) so introspection works
-// without any prior credentials.
+// State captured across calls:
+//   - api_key: on the first `initialize` response with no prior auth,
+//     hatchable.com/mcp mints a pending API key in `result.meta.api_key`.
+//     We stash it and send it as `Authorization: Bearer <key>` on every
+//     subsequent call so `tools/call` (which requires auth) works.
+//   - Mcp-Session-Id: echoed back on future requests when the server
+//     issues one on `initialize`.
 //
 // End users don't need this file — configure https://hatchable.com/mcp
-// directly in your MCP client and let its native HTTP transport do the
-// work.
+// directly in your MCP client and let its native HTTP transport handle
+// the session.
 
 const MCP_URL = process.env.HATCHABLE_MCP_URL || 'https://hatchable.com/mcp';
 
+let apiKey = process.env.HATCHABLE_TOKEN || null;
+let sessionId = null;
 let buffer = '';
-process.stdin.setEncoding('utf8');
 
+process.stdin.setEncoding('utf8');
 process.stdin.on('data', (chunk) => {
   buffer += chunk;
   let idx;
@@ -35,14 +39,36 @@ process.stdin.on('data', (chunk) => {
 });
 
 async function forward(body) {
+  const headers = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
+  if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+  if (sessionId) headers['Mcp-Session-Id'] = sessionId;
+
   const res = await fetch(MCP_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
+    headers,
     body,
   });
+
+  const sid = res.headers.get('Mcp-Session-Id');
+  if (sid) sessionId = sid;
+
   const text = await res.text();
+
+  if (text && !apiKey) {
+    try {
+      const parsed = JSON.parse(text);
+      const key = parsed?.result?.meta?.api_key;
+      if (typeof key === 'string' && key.length > 0) {
+        apiKey = key;
+      }
+    } catch {
+      // response may not be JSON (e.g. notifications/initialized returns
+      // a malformed envelope upstream); ignore and keep going.
+    }
+  }
+
   if (text) process.stdout.write(text + '\n');
 }
