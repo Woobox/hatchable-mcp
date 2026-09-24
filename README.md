@@ -3,7 +3,9 @@
 [![MCP Registry](https://img.shields.io/badge/MCP_Registry-com.hatchable%2Fhatchable-blue)](https://registry.modelcontextprotocol.io/v0/servers?search=hatchable)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 
-Build and host full-stack web apps and sites on Hatchable from any MCP client. Every project gets its own Postgres database, auth, storage, domains, and cron — plus a live URL in seconds. Free tier, no credits.
+Build and host full-stack web apps and sites on Hatchable from any MCP client. Every project gets its own Postgres database, auth, storage, domains, cron and email, plus a live URL in seconds. Free tier, no credits.
+
+This repo is two things: the **Claude Code plugin** for Hatchable (this directory is the plugin), and the connector notes for every other MCP client. Hatchable's code runs on our infrastructure, not yours; there is nothing to build or install locally.
 
 | | |
 |---|---|
@@ -12,15 +14,34 @@ Build and host full-stack web apps and sites on Hatchable from any MCP client. E
 | **Authentication** | OAuth 2.1 with PKCE and Dynamic Client Registration (RFC 7591). Bearer fallback. |
 | **Registry** | [`com.hatchable/hatchable`](https://registry.modelcontextprotocol.io/v0/servers?search=hatchable) |
 | **Homepage** | [hatchable.com](https://hatchable.com) |
-| **Docs** | [hatchable.com/docs](https://hatchable.com/docs) |
+| **Docs** | [hatchable.com/docs/developers](https://hatchable.com/docs/developers) |
 
-This repo is a thin connector — Hatchable's code runs on our infrastructure, not yours. There's nothing to install locally. You configure the endpoint in your MCP client and sign in with OAuth (or a bearer token).
+## Claude Code plugin
+
+```
+/plugin marketplace add anthropics/claude-plugins-community
+/plugin install hatchable@claude-community
+```
+
+Then connect your account: run `/mcp`, pick **hatchable**, and complete the sign-in. New accounts are free, and the first app you publish to the open web is free too.
+
+What the plugin adds:
+
+- **The Hatchable MCP server, preconfigured.** 34 tools for creating projects, writing files, running SQL, deploying, reading logs, and forking templates. Full reference at [hatchable.com/docs/developers/mcp](https://hatchable.com/docs/developers/mcp).
+- **`/hatchable:new <description>`**: build and deploy an app from a plain-language description. Returns a live URL.
+- **`/hatchable:import`**: deploy the repo you are sitting in. Maps your files to the platform structure, runs the validators, and walks any blockers.
+- **`/hatchable:fix <what's wrong>`**: diagnose a rejected deploy or a broken live app using the platform's own logs and dry-run validators.
+- **The `hatchable:builder` agent**: an app builder Claude can delegate whole build tasks to. It creates, codes, deploys and verifies in the cloud, then hands back the live URL. Mention it with `@hatchable:builder` or let Claude pick it.
+
+A Hatchable project is a folder: paths become routes, SQL files become schema, one TOML file declares the rest. The platform serves its own build patterns to your agent over MCP (`list_skills`, `read_skill`), so Claude reads the current conventions at build time instead of relying on training data.
+
+To try the plugin from a checkout before installing it: `claude --plugin-dir .` in this directory.
 
 ## Setup by client
 
 ### Claude Code (terminal)
 
-One command, OAuth handles the rest:
+Install the plugin (see above), or add the server directly. OAuth handles the rest:
 
 ```bash
 claude mcp add --transport http hatchable https://hatchable.com/mcp
@@ -92,20 +113,20 @@ Don't have Antigravity? [Download from Google](https://antigravity.google) — f
 
 ### Other MCP clients
 
-Any client that supports Streamable HTTP + OAuth will work. Configure `https://hatchable.com/mcp` as the endpoint and let the client handle the OAuth dance. Clients that only support bearer tokens should send `Authorization: Bearer <API_KEY>`, where the key comes from [the console](https://hatchable.com/console/settings?tab=api-keys). Clients that send no auth at all will receive a pending key on first `initialize` that they can persist for future calls.
+Any client that supports Streamable HTTP + OAuth will work. Configure `https://hatchable.com/mcp` as the endpoint and let the client handle the OAuth dance. Clients that only support bearer tokens should send `Authorization: Bearer <API_KEY>`, where the key comes from [the console](https://hatchable.com/console/settings?tab=api-keys).
 
 ## What you can do (tool surface)
 
-Hatchable exposes 30+ tools. Highlights:
+34 tools, served live by the endpoint:
 
-- **Project lifecycle** — `create_project`, `get_project`, `list_projects`, `fork_project`, `set_visibility`, `update_project`
-- **Files** — `write_file`, `write_files`, `read_file`, `grep`, `list_files`, `patch_file`, `delete_file`, `import_file_from_url`, `upload_file`
-- **Database** — `execute_sql`, `get_schema`
-- **Deploy + observability** — `deploy`, `dry_run_deploy`, `run_function`, `run_code`, `view_logs`, `list_deployments`, `get_deployment`, `list_functions`, `list_cron_jobs`
-- **Environment** — `set_env`, `list_env`, `delete_env`
-- **Discovery** — `search_projects`, `search_documentation`
+- **Project lifecycle**: `create_project`, `get_project`, `list_projects`, `update_project`, `fork_project`, `create_preview_link`
+- **Files**: `write_file`, `write_files`, `patch_file`, `read_file`, `grep`, `list_files`, `delete_file`, `upload_file`, `list_pending_uploads`, `import_file_from_url`
+- **Database**: `execute_sql`, `get_schema`
+- **Deploy and observability**: `dry_run_deploy`, `deploy`, `list_deployments`, `get_deployment`, `list_functions`, `run_function`, `run_code`, `view_logs`, `list_cron_jobs`
+- **Agent tasks**: `list_agent_tasks`, `update_agent_task` (plain-language requests the project owner files in the console)
+- **Guidance and discovery**: `list_skills`, `read_skill`, `search_documentation`, `search_projects`, `submit_platform_feedback`
 
-Each project ships with Node.js 20, a dedicated Postgres database, built-in auth (email + OAuth providers), cron scheduling, object storage, and email sending. See [hatchable.com/docs](https://hatchable.com/docs) for the full SDK and handler contract.
+Each project ships with a dedicated Postgres database, built-in auth (email code and OAuth providers), cron scheduling, object storage, email sending and AI routing, all reached through the `hatchable` SDK inside your handlers. No `npm install`, no build step. See [hatchable.com/docs/developers](https://hatchable.com/docs/developers) for the SDK and handler contract.
 
 ## Manifests
 
@@ -122,7 +143,7 @@ Bearer tokens are scoped per-account. You can rotate or revoke them in [the cons
 
 ## Docker (for registries and scanners)
 
-The [`Dockerfile`](./Dockerfile) in this repo is a thin stdio-to-HTTP proxy built on [`mcp-remote`](https://github.com/geelen/mcp-remote). It exists so registries and quality scanners that expect a runnable container (Glama, Smithery, etc.) can introspect the tool surface. End users don't need to build it — configure `https://hatchable.com/mcp` directly in your MCP client and let the client's native HTTP transport talk to the server.
+The [`Dockerfile`](./Dockerfile) in this repo is a small stdio-to-HTTP proxy ([`proxy.mjs`](./proxy.mjs)). It exists so registries and quality scanners that expect a runnable container (Glama, Smithery, etc.) can introspect the tool surface. End users don't need to build it — configure `https://hatchable.com/mcp` directly in your MCP client and let the client's native HTTP transport talk to the server.
 
 ```bash
 docker build -t hatchable-mcp .

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "hatchable": {
+      "type": "http",
+      "url": "https://hatchable.com/mcp"
+    }
+  }
+}

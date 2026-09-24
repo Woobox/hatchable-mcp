@@ -1,0 +1,14 @@
+{
+  "name": "hatchable",
+  "description": "Build, deploy, and run full-stack web apps from Claude Code. Every project gets a live URL, a dedicated PostgreSQL database, auth, cron, email, and storage. No build step, no infrastructure. After installing, run /mcp and sign in to Hatchable to connect (free).",
+  "version": "1.0.0",
+  "author": {
+    "name": "Hatchable",
+    "email": "support@hatchable.com",
+    "url": "https://hatchable.com"
+  },
+  "homepage": "https://hatchable.com/docs/developers",
+  "repository": "https://github.com/Woobox/hatchable-mcp",
+  "license": "MIT",
+  "keywords": ["deploy", "hosting", "full-stack", "database", "mcp", "web-apps"]
+}
